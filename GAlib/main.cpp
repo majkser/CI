@@ -65,12 +65,12 @@ int main(int argc, char **argv)
         auto square = parseInput(argc, argv);
         InscribedCircle::setPolygon(square);
 
-        double minx, maxx, miny, maxy;
-        Geometry::boundingBox(square, minx, maxx, miny, maxy);
+        double x1 = square[0].first, x2 = square[2].first;
+        double y1 = square[0].second, y2 = square[2].second;
+        double cx_min = std::min(x1, x2), cx_max = std::max(x1, x2);
+        double cy_min = std::min(y1, y2), cy_max = std::max(y1, y2);
 
-        double cx_min = minx, cx_max = maxx;
-        double cy_min = miny, cy_max = maxy;
-        double diag = hypot(maxx - minx, maxy - miny);
+        double diag = hypot(cx_max - cx_min, cy_max - cy_min);
         double r_min = 0.0, r_max = diag / 2.0;
 
         GABin2DecPhenotype ph;

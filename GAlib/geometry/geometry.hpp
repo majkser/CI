@@ -14,10 +14,6 @@ public:
     static double minDistanceToPolygonBoundary(
         double cx, double cy,
         const std::vector<std::pair<double, double>> &polygon);
-
-    static void boundingBox(const std::vector<std::pair<double, double>> &pts,
-                            double &minx, double &maxx,
-                            double &miny, double &maxy);
 };
 
 #endif // GEOMETRY_H

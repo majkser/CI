@@ -46,18 +46,3 @@ double Geometry::minDistanceToPolygonBoundary(
     }
     return minD;
 }
-
-void Geometry::boundingBox(const std::vector<std::pair<double, double>> &pts,
-                           double &minx, double &maxx,
-                           double &miny, double &maxy)
-{
-    minx = miny = std::numeric_limits<double>::infinity();
-    maxx = maxy = -std::numeric_limits<double>::infinity();
-    for (const auto &p : pts)
-    {
-        minx = std::min(minx, p.first);
-        maxx = std::max(maxx, p.first);
-        miny = std::min(miny, p.second);
-        maxy = std::max(maxy, p.second);
-    }
-}
