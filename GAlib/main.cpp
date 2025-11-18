@@ -10,11 +10,18 @@
 #include "geometry/geometry.hpp"
 #include "circle/inscribedCircle.hpp"
 
+std::vector<std::pair<double, double>> square;
 std::vector<std::pair<double, double>> parseInput(int argc, char **argv)
 {
     std::vector<double> v;
     if (argc > 1)
     {
+        if (argc != 5) // program name + 4 arguments
+        {
+            throw std::runtime_error(
+                "Usage: provide exactly 4 numbers (x1 y1 x2 y2) representing opposite corners of a square");
+        }
+
         for (int i = 1; i < argc; ++i)
         {
             v.push_back(atof(argv[i]));
@@ -25,29 +32,27 @@ std::vector<std::pair<double, double>> parseInput(int argc, char **argv)
         double t;
         while (std::cin >> t)
             v.push_back(t);
+
+        if (v.size() != 4)
+        {
+            throw std::runtime_error(
+                "Input error: provide exactly 4 numbers (x1 y1 x2 y2) representing opposite corners of a square");
+        }
     }
 
-    if (!(v.size() == 4 || v.size() == 8))
+    double x1 = v[0], y1 = v[1], x2 = v[2], y2 = v[3];
+
+    if ((std::abs(x2 - x1) - std::abs(y2 - y1)) > 1e-4)
     {
-        throw std::runtime_error(
-            "Usage: provide 4 numbers (x1 y1 x2 y2) or 8 numbers (x1 y1 ... x4 y4)");
+        throw std::runtime_error("The provided coordinates do not form a square.");
     }
 
-    std::vector<std::pair<double, double>> polygon;
-    if (v.size() == 4)
-    {
-        double x1 = v[0], y1 = v[1], x2 = v[2], y2 = v[3];
-        polygon.push_back({x1, y1});
-        polygon.push_back({x1, y2});
-        polygon.push_back({x2, y2});
-        polygon.push_back({x2, y1});
-    }
-    else
-    {
-        for (int i = 0; i < 4; ++i)
-            polygon.push_back({v[2 * i], v[2 * i + 1]});
-    }
-    return polygon;
+    square.push_back({x1, y1});
+    square.push_back({x1, y2});
+    square.push_back({x2, y2});
+    square.push_back({x2, y1});
+
+    return square;
 }
 
 int main(int argc, char **argv)
@@ -57,11 +62,11 @@ int main(int argc, char **argv)
 
     try
     {
-        auto polygon = parseInput(argc, argv);
-        InscribedCircle::setPolygon(polygon);
+        auto square = parseInput(argc, argv);
+        InscribedCircle::setPolygon(square);
 
         double minx, maxx, miny, maxy;
-        Geometry::boundingBox(polygon, minx, maxx, miny, maxy);
+        Geometry::boundingBox(square, minx, maxx, miny, maxy);
 
         double cx_min = minx, cx_max = maxx;
         double cy_min = miny, cy_max = maxy;
@@ -121,11 +126,20 @@ int main(int argc, char **argv)
         double best_cx = best.phenotype(0);
         double best_cy = best.phenotype(1);
         double best_r = best.phenotype(2);
-        double minD = Geometry::minDistanceToPolygonBoundary(best_cx, best_cy, polygon);
+        double minD = Geometry::minDistanceToPolygonBoundary(best_cx, best_cy, square);
         if (best_r > minD)
             best_r = minD;
         std::cout << std::fixed << std::setprecision(8);
         std::cout << best_cx << " " << best_cy << " " << best_r << "\n";
+
+        std::ofstream csvBest("best_circle.csv");
+        csvBest << "x0,y0,x1,y1,x2,y2,x3,y3,cx,cy,r\n";
+        csvBest << square[0].first << "," << square[0].second << ","
+                << square[1].first << "," << square[1].second << ","
+                << square[2].first << "," << square[2].second << ","
+                << square[3].first << "," << square[3].second << ","
+                << best_cx << "," << best_cy << "," << best_r << "\n";
+        csvBest.close();
     }
     catch (const std::exception &e)
     {
