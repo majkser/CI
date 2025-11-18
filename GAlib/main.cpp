@@ -1,10 +1,12 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <cmath>
 #include <iomanip>
 #include <ga/GABin2DecGenome.h>
 #include <ga/GASimpleGA.h>
 #include <ga/ga.h>
+#include <ga/GARealGenome.h>
 #include "geometry/geometry.hpp"
 #include "circle/inscribedCircle.hpp"
 
@@ -81,15 +83,47 @@ int main(int argc, char **argv)
         ga.nGenerations(400);
         ga.evolve();
 
+        std::ofstream csv("ga_stats.csv");
+        csv << "Generation,BestFitness,AvgFitness,WorstFitness,bestCx,bestCy,bestR\n";
+
+        ga.initialize();
+        for (int i = 0; i < ga.nGenerations(); ++i)
+        {
+            auto best_fitness = ga.statistics().bestIndividual().score();
+
+            double avg_fitness = 0.0;
+            double worst = INFINITY;
+
+            GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
+            double best_cx = best.phenotype(0);
+            double best_cy = best.phenotype(1);
+            double best_r = best.phenotype(2);
+
+            for (int j = 0; j < ga.population().size(); ++j)
+            {
+                GABin2DecGenome &ind = (GABin2DecGenome &)ga.population().individual(j);
+                double fit = ind.score();
+                avg_fitness += fit;
+                if (fit < worst)
+                    worst = fit;
+            }
+            avg_fitness /= ga.population().size();
+
+            csv << i << "," << best_fitness << "," << avg_fitness << "," << worst << ","
+                << best_cx << "," << best_cy << "," << best_r << "\n";
+
+            ga.step();
+        }
+
+        csv.close();
+
         GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
         double best_cx = best.phenotype(0);
         double best_cy = best.phenotype(1);
         double best_r = best.phenotype(2);
-
         double minD = Geometry::minDistanceToPolygonBoundary(best_cx, best_cy, polygon);
         if (best_r > minD)
             best_r = minD;
-
         std::cout << std::fixed << std::setprecision(8);
         std::cout << best_cx << " " << best_cy << " " << best_r << "\n";
     }
