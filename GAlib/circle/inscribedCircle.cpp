@@ -23,11 +23,10 @@ float InscribedCircle::fitness(GAGenome &g)
 
     if (r <= minD)
     {
-        return float(1.0 + r);
+        return float(r);
     }
     else
     {
-        double violation = r - minD;
-        return float(1e-6 / (1.0 + violation));
+        return 1e-6f;
     }
 }

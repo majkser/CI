@@ -30,11 +30,9 @@ def plot_square_and_circle(square, circle_center, circle_radius, filename="squar
 def plot_fitness_evolution(filename="fitness_evolution.png"):
     if os.path.exists("ga_stats.csv"):
         df = pd.read_csv("ga_stats.csv")
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
+        ax = plt.gca()
         
         ax.plot(df['Generation'], df['BestFitness'], label='Best Fitness', color='green', linewidth=2)
-        ax.plot(df['Generation'], df['AvgFitness'], label='Average Fitness', color='blue', linewidth=2)
         
         ax.set_xlabel('Generation')
         ax.set_ylabel('Fitness')

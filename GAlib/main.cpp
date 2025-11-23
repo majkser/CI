@@ -86,43 +86,36 @@ int main(int argc, char **argv)
         ga.pCrossover(0.8);
         ga.pMutation(0.02);
         ga.nGenerations(400);
-        ga.evolve();
 
         std::ofstream csv("ga_stats.csv");
         csv << "Generation,BestFitness,AvgFitness,WorstFitness,bestCx,bestCy,bestR\n";
 
         ga.initialize();
-        for (int i = 0; i < ga.nGenerations(); ++i)
+        GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
+        csv << 0 << ","
+            << ga.statistics().maxEver() << ","
+            << ga.statistics().current(GAStatistics::Mean) << ","
+            << ga.statistics().current(GAStatistics::Minimum) << ","
+            << best.phenotype(0) << "," << best.phenotype(1) << "," << best.phenotype(2) << "\n";
+
+        for (int i = 1; i <= ga.nGenerations(); ++i)
         {
-            auto best_fitness = ga.statistics().bestIndividual().score();
+            ga.step(); // Evolve first, then record statistics
 
-            double avg_fitness = 0.0;
-            double worst = INFINITY;
+            GABin2DecGenome &best_gen = (GABin2DecGenome &)ga.statistics().bestIndividual();
 
-            GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
-            double best_cx = best.phenotype(0);
-            double best_cy = best.phenotype(1);
-            double best_r = best.phenotype(2);
-
-            for (int j = 0; j < ga.population().size(); ++j)
-            {
-                GABin2DecGenome &ind = (GABin2DecGenome &)ga.population().individual(j);
-                double fit = ind.score();
-                avg_fitness += fit;
-                if (fit < worst)
-                    worst = fit;
-            }
-            avg_fitness /= ga.population().size();
-
-            csv << i << "," << best_fitness << "," << avg_fitness << "," << worst << ","
-                << best_cx << "," << best_cy << "," << best_r << "\n";
-
-            ga.step();
+            csv << i << ","
+                << ga.statistics().maxEver() << ","
+                << ga.statistics().current(GAStatistics::Mean) << ","
+                << ga.statistics().current(GAStatistics::Minimum) << ","
+                << best_gen.phenotype(0) << ","
+                << best_gen.phenotype(1) << ","
+                << best_gen.phenotype(2) << "\n";
         }
 
         csv.close();
 
-        GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
+        // GABin2DecGenome &best = (GABin2DecGenome &)ga.statistics().bestIndividual();
         double best_cx = best.phenotype(0);
         double best_cy = best.phenotype(1);
         double best_r = best.phenotype(2);
