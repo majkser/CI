@@ -3,10 +3,13 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
+
+// GAlib headers includes
 #include <ga/GABin2DecGenome.h>
 #include <ga/GASimpleGA.h>
 #include <ga/ga.h>
 #include <ga/GARealGenome.h>
+
 #include "geometry/geometry.hpp"
 #include "circle/inscribedCircle.hpp"
 
@@ -73,19 +76,23 @@ int main(int argc, char **argv)
         double diag = hypot(cx_max - cx_min, cy_max - cy_min);
         double r_min = 0.0, r_max = diag / 2.0;
 
+        // Define three phenotype components: cx, cy, r - each encoded with 28 bits
         GABin2DecPhenotype ph;
         const int bits = 28;
         ph.add(bits, cx_min, cx_max);
         ph.add(bits, cy_min, cy_max);
         ph.add(bits, r_min, r_max);
 
+        // Create genome with the defined phenotype and fitness function
         GABin2DecGenome genome(ph, InscribedCircle::fitness);
 
+        // Set up classical genetic algorithm with parameters and initialized genome
         GASimpleGA ga(genome);
         ga.populationSize(200);
         ga.pCrossover(0.8);
         ga.pMutation(0.02);
         ga.nGenerations(400);
+        // ga.evolve(); // evolve whole population
 
         std::ofstream csv("ga_stats.csv");
         csv << "Generation,BestFitness,AvgFitness,WorstFitness,bestCx,bestCy,bestR\n";
@@ -100,7 +107,7 @@ int main(int argc, char **argv)
 
         for (int i = 1; i <= ga.nGenerations(); ++i)
         {
-            ga.step(); // Evolve first, then record statistics
+            ga.step(); // make one generation step
 
             GABin2DecGenome &best_gen = (GABin2DecGenome &)ga.statistics().bestIndividual();
 
